@@ -1,6 +1,7 @@
 package org.example.ui;
 
 import org.example.model.Usuario;
+import org.example.service.GestorMovimentacoes;
 import org.example.service.GestorProdutos;
 import org.example.service.GestorUsuarios;
 
@@ -8,48 +9,47 @@ import javax.swing.*;
 import java.awt.*;
 
 public class LoginFrame extends JFrame {
-    private final GestorUsuarios gestorUsuarios = new GestorUsuarios();
-    private final GestorProdutos gestorProdutos = new GestorProdutos();
+    private final GestorUsuarios gestorUsuarios;
+    private final GestorProdutos gestorProdutos;
+    private final GestorMovimentacoes gestorMovimentacoes;
 
-    public LoginFrame() {
-        setTitle("Login");
-        setSize(360, 220);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    public LoginFrame(GestorUsuarios gu, GestorProdutos gp, GestorMovimentacoes gm) {
+        super("ERP Estoque - Login");
+        this.gestorUsuarios = gu;
+        this.gestorProdutos = gp;
+        this.gestorMovimentacoes = gm;
+
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(380, 220);
         setLocationRelativeTo(null);
 
-        var panel = new JPanel(new GridLayout(4, 2, 8, 8));
-        var txtEmail = new JTextField();
-        var txtSenha = new JPasswordField();
-        var btnEntrar = new JButton("Entrar");
-        var btnCadastrar = new JButton("Cadastrar");
+        var panel = new JPanel(new GridBagLayout());
+        var gbc = new GridBagConstraints();
+        gbc.insets = new Insets(6,6,6,6);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        panel.add(new JLabel("Email:"));
-        panel.add(txtEmail);
-        panel.add(new JLabel("Senha:"));
-        panel.add(txtSenha);
-        panel.add(btnEntrar);
-        panel.add(btnCadastrar);
+        var tfEmail = new JTextField(20);
+        var pfSenha = new JPasswordField(20);
+        var btn = new JButton("Entrar");
 
-        add(panel, BorderLayout.CENTER);
+        gbc.gridx=0; gbc.gridy=0; panel.add(new JLabel("Email:"), gbc);
+        gbc.gridx=1; panel.add(tfEmail, gbc);
+        gbc.gridx=0; gbc.gridy=1; panel.add(new JLabel("Senha:"), gbc);
+        gbc.gridx=1; panel.add(pfSenha, gbc);
+        gbc.gridwidth=2; gbc.gridx=0; gbc.gridy=2; panel.add(btn, gbc);
 
-        btnEntrar.addActionListener(e -> {
-            String email = txtEmail.getText().trim();
-            String senha = new String(txtSenha.getPassword());
+        btn.addActionListener(e -> {
+            String email = tfEmail.getText().trim();
+            String senha = new String(pfSenha.getPassword());
             Usuario u = gestorUsuarios.login(email, senha);
             if (u == null) {
-                JOptionPane.showMessageDialog(this, "Email ou senha inválidos!");
+                JOptionPane.showMessageDialog(this, "Credenciais inválidas");
                 return;
             }
+            new MainFrame(u, gestorProdutos, gestorMovimentacoes).setVisible(true);
             dispose();
-            switch (u.getNivel()) {
-                case "Admin" -> new MenuAdminFrame(u, gestorUsuarios, gestorProdutos).setVisible(true);
-                case "Vendas" -> new MenuVendasFrame(u, gestorProdutos).setVisible(true);
-                case "Compras" -> new MenuComprasFrame(u, gestorProdutos).setVisible(true);
-                default -> JOptionPane.showMessageDialog(this, "Nível desconhecido: " + u.getNivel());
-            }
         });
 
-        btnCadastrar.addActionListener(e -> new CadastroFrame(gestorUsuarios).setVisible(true));
+        setContentPane(panel);
     }
 }
-
