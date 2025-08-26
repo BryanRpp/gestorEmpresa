@@ -1,31 +1,24 @@
 package org.example.model;
 
 public class Usuario {
-    private Integer id;
+    private int id;
     private String nome;
-    private String email;
+    private String login;
     private String senha;
-    private String nivel; // Admin, Estoquista, Consulta
+    private String papel; // Admin ou Funcionario
 
-    public Usuario() {}
-
-    public Usuario(Integer id, String nome, String email, String senha, String nivel) {
+    public Usuario(int id, String nome, String login, String senha, String papel) {
         this.id = id;
         this.nome = nome;
-        this.email = email;
+        this.login = login;
         this.senha = senha;
-        this.nivel = nivel;
+        this.papel = papel;
     }
 
-    public Integer getId() { return id; }
+    // Getters e Setters
+    public int getId() { return id; }
     public String getNome() { return nome; }
-    public String getEmail() { return email; }
+    public String getLogin() { return login; }
     public String getSenha() { return senha; }
-    public String getNivel() { return nivel; }
-
-    public void setId(Integer id) { this.id = id; }
-    public void setNome(String nome) { this.nome = nome; }
-    public void setEmail(String email) { this.email = email; }
-    public void setSenha(String senha) { this.senha = senha; }
-    public void setNivel(String nivel) { this.nivel = nivel; }
+    public String getPapel() { return papel; }
 }

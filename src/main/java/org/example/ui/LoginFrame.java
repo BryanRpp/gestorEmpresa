@@ -1,8 +1,6 @@
 package org.example.ui;
 
 import org.example.model.Usuario;
-import org.example.service.GestorMovimentacoes;
-import org.example.service.GestorProdutos;
 import org.example.service.GestorUsuarios;
 
 import javax.swing.*;
@@ -10,46 +8,46 @@ import java.awt.*;
 
 public class LoginFrame extends JFrame {
     private final GestorUsuarios gestorUsuarios;
-    private final GestorProdutos gestorProdutos;
-    private final GestorMovimentacoes gestorMovimentacoes;
 
-    public LoginFrame(GestorUsuarios gu, GestorProdutos gp, GestorMovimentacoes gm) {
-        super("ERP Estoque - Login");
-        this.gestorUsuarios = gu;
-        this.gestorProdutos = gp;
-        this.gestorMovimentacoes = gm;
+    public LoginFrame(GestorUsuarios gestorUsuarios) {
+        this.gestorUsuarios = gestorUsuarios;
 
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(380, 220);
+        setTitle("Login - ERP Estoque");
+        setSize(400, 200);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        var panel = new JPanel(new GridBagLayout());
-        var gbc = new GridBagConstraints();
-        gbc.insets = new Insets(6,6,6,6);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
 
-        var tfEmail = new JTextField(20);
-        var pfSenha = new JPasswordField(20);
-        var btn = new JButton("Entrar");
+        JTextField txtEmail = new JTextField();
+        JPasswordField txtSenha = new JPasswordField();
+        JButton btnLogin = new JButton("Entrar");
 
-        gbc.gridx=0; gbc.gridy=0; panel.add(new JLabel("Email:"), gbc);
-        gbc.gridx=1; panel.add(tfEmail, gbc);
-        gbc.gridx=0; gbc.gridy=1; panel.add(new JLabel("Senha:"), gbc);
-        gbc.gridx=1; panel.add(pfSenha, gbc);
-        gbc.gridwidth=2; gbc.gridx=0; gbc.gridy=2; panel.add(btn, gbc);
-
-        btn.addActionListener(e -> {
-            String email = tfEmail.getText().trim();
-            String senha = new String(pfSenha.getPassword());
+        btnLogin.addActionListener(e -> {
+            String email = txtEmail.getText();
+            String senha = new String(txtSenha.getPassword());
             Usuario u = gestorUsuarios.login(email, senha);
-            if (u == null) {
-                JOptionPane.showMessageDialog(this, "Credenciais inválidas");
-                return;
+            if (u != null) {
+                JOptionPane.showMessageDialog(this, "Bem-vindo, " + u.getNome());
+                switch (u.getNivel()) {
+                    case "Admin" -> {
+                        new MenuAdminFrame(u, gestorUsuarios).setVisible(true);
+                        dispose();
+                    }
+                    default -> JOptionPane.showMessageDialog(this, "Nível de acesso não implementado.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Usuário ou senha inválidos");
             }
-            new MainFrame(u, gestorProdutos, gestorMovimentacoes).setVisible(true);
-            dispose();
         });
 
-        setContentPane(panel);
+        panel.add(new JLabel("Email:"));
+        panel.add(txtEmail);
+        panel.add(new JLabel("Senha:"));
+        panel.add(txtSenha);
+        panel.add(new JLabel(""));
+        panel.add(btnLogin);
+
+        add(panel);
     }
 }

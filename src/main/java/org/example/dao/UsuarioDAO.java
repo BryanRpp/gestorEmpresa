@@ -7,41 +7,43 @@ import java.sql.*;
 
 public class UsuarioDAO {
 
-    public Usuario autenticar(String email, String senha) {
-        String sql = "SELECT id,nome,email,senha,nivel FROM usuarios WHERE email=? AND senha=?";
-        try (Connection c = Conexao.obter();
-             PreparedStatement ps = c.prepareStatement(sql)) {
-            ps.setString(1, email);
-            ps.setString(2, senha);
-            ResultSet rs = ps.executeQuery();
+    public Usuario autenticar(String login, String senha) {
+        String sql = "SELECT * FROM usuarios WHERE login = ? AND senha = ?";
+        try (Connection conn = Conexao.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, login);
+            stmt.setString(2, senha);
+
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return new Usuario(
                         rs.getInt("id"),
                         rs.getString("nome"),
-                        rs.getString("email"),
+                        rs.getString("login"),
                         rs.getString("senha"),
-                        rs.getString("nivel")
+                        rs.getString("papel")
                 );
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao autenticar usuário", e);
         }
         return null;
     }
 
-    /** Garante que há um Admin; usa o mesmo do schema, mas deixa idempotente. */
-    public void criarAdminSeVazio() {
-        String count = "SELECT COUNT(*) FROM usuarios";
-        String insert = "INSERT INTO usuarios(nome,email,senha,nivel) VALUES('Administrador','admin@sistema.com','admin123','Admin')";
-        try (Connection c = Conexao.obter();
-             Statement st = c.createStatement()) {
-            ResultSet rs = st.executeQuery(count);
-            rs.next();
-            if (rs.getInt(1) == 0) {
-                st.executeUpdate(insert);
-            }
+    public void salvar(Usuario usuario) {
+        String sql = "INSERT INTO usuarios (nome, login, senha, papel) VALUES (?, ?, ?, ?)";
+        try (Connection conn = Conexao.conectar();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, usuario.getNome());
+            stmt.setString(2, usuario.getLogin());
+            stmt.setString(3, usuario.getSenha());
+            stmt.setString(4, usuario.getPapel());
+            stmt.executeUpdate();
+
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Erro ao salvar usuário", e);
         }
     }
 }
